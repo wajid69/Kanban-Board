@@ -1,29 +1,21 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import TaskCard from './TaskCard'
 import { useUIStore } from '../store/uiStore'
+import { useDroppable } from '@dnd-kit/core'
 
-export default React.memo(function Column({ id, title, tasks, onDrop, onEdit }) {
+export default React.memo(function Column({ id, title, tasks, onEdit }) {
   const setDragging = useUIStore((s) => s.setDragging)
   const dragging = useUIStore((s) => s.dragging)
+  const ref = useRef(null)
 
-  // Handle Drag
-  function handleDragOver(e) {
-    e.preventDefault()
+  const { isOver, setNodeRef } = useDroppable({ id })
+  function combinedRef(node) {
+    ref.current = node
+    setNodeRef(node)
   }
 
-  // Handle Drop
-  function handleDrop(e) {
-    e.preventDefault()
-    const raw = e.dataTransfer.getData('application/json')
-    if (!raw) return
-    try {
-      const payload = JSON.parse(raw)
-      onDrop(payload.task, id)
-      setDragging(null)
-    } catch {}
-  }
   return (
-    <div onDragOver={handleDragOver} onDrop={handleDrop} className='bg-white rounded shadow p-3 min-h-[200px] hover:ring-2 hover:ring-blue-200 transition-all'>
+    <div ref={combinedRef} className={`bg-white rounded shadow p-3 min-h-[200px] hover:ring-2 hover:ring-blue-200 transition-all ${isOver ? 'col-drop-target' : ''}`}>
       <h2 className='text-lg font-medium mb-2'>{title}</h2>
       <div className='space-y-2'>
         {tasks.map((task) => (

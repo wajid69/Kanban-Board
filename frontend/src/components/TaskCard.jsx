@@ -1,24 +1,40 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { useUIStore } from '../store/uiStore'
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { useDeleteTask } from '../api/tasks'
 import { toast } from 'react-toastify'
 
-export default React.memo(function TaskCard({ task, onEdit }) {
+export default React.memo(function TaskCard({ task, onEdit, isOverlay = false }) {
   const [isEditing, setIsEditing] = useState(false)
   const setDragging = useUIStore((s) => s.setDragging)
   const del = useDeleteTask()
+  const cardRef = useRef(null)
 
-  // Handle Drag Start
-  function handleDragStart(e) {
-    setDragging(task)
-    e.dataTransfer.setData('application/json', JSON.stringify({ task }))
-    e.dataTransfer.effectAllowed = 'move'
+  
+  let attributes = {}, listeners = {}, setNodeRef = () => {}, transform = null, transition = undefined, isDragging = false
+  if (!isOverlay) {
+    try {
+      const sortable = useSortable({ id: task.id })
+      attributes = sortable.attributes || {}
+      listeners = sortable.listeners || {}
+      setNodeRef = sortable.setNodeRef || (() => {})
+      transform = sortable.transform
+      transition = sortable.transition
+      isDragging = sortable.isDragging || false
+    } catch (e) {}
   }
-  // Handle Delete
+  const style = {
+    transform: transform ? CSS.Transform.toString(transform) : undefined,
+    transition
+  }
+
+  
+  
   function handleDelete() {
     del.mutate(task.id)
   }
-  // Handle Edit
+  
   function handleEdit() {
     setIsEditing(true)
     setTimeout(() => {
@@ -26,8 +42,25 @@ export default React.memo(function TaskCard({ task, onEdit }) {
       setIsEditing(false)
     }, 100)
   }
+
+
+
+  
+
+  useEffect(() => {
+    return () => {}
+  }, [])
+
+  
+
+  
+  const rootRef = (node) => {
+    if (!isOverlay) setNodeRef(node)
+    cardRef.current = node
+  }
+
   return (
-    <div draggable onDragStart={handleDragStart} className='border p-3 rounded bg-gray-50 hover:bg-gray-100 cursor-move hover:shadow-md transition-shadow'>
+    <div ref={rootRef} style={style} {...attributes} {...listeners} className={`border p-3 rounded bg-gray-50 hover:bg-gray-100 ${isDragging ? 'opacity-80 shadow-lg' : 'hover:shadow-md'} cursor-move transition-shadow`}>
       <div className='flex justify-between items-start'>
         <div className='flex-1'>
           <div className='font-semibold text-gray-800'>{task.title}</div>
@@ -35,6 +68,7 @@ export default React.memo(function TaskCard({ task, onEdit }) {
         </div>
         <div className='ml-3 flex flex-col gap-2'>
           <button 
+            onPointerDown={(e) => e.stopPropagation()} 
             onClick={handleEdit} 
             disabled={isEditing}
             className='text-xs bg-black text-white px-2 py-1 rounded disabled:opacity-50 flex items-center gap-1'
@@ -48,6 +82,7 @@ export default React.memo(function TaskCard({ task, onEdit }) {
             Edit
           </button>
           <button 
+            onPointerDown={(e) => e.stopPropagation()} 
             onClick={handleDelete} 
             disabled={del.isLoading}
             className='text-xs bg-orange-red text-white px-2 py-1 rounded disabled:opacity-50 flex items-center gap-1'

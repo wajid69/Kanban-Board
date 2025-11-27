@@ -2,3 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 html,body,#root { height: 100% }
+
+.col-drop-target {
+	box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+	transform: translateY(-3px);
+	transition: box-shadow 150ms ease, transform 150ms ease;
+}
+
+.pointerdrag-clone {
+	box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+	border-radius: 6px;
+	background: white;
+	opacity: 0.98;
+	transition: transform 120ms ease, opacity 120ms ease;
+	pointer-events: none;
+}

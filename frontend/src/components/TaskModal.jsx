@@ -7,6 +7,8 @@ export default React.memo(function TaskModal({ open, close, editing }) {
   const [description, setDescription] = useState('')
   const [status, setStatus] = useState('todo')
   const isLoading = create.isLoading || update.isLoading
+
+  //useEffects
   useEffect(() => {
     if (editing) {
       setTitle(editing.title || '')
@@ -20,7 +22,7 @@ export default React.memo(function TaskModal({ open, close, editing }) {
   }, [editing, open])
   if (!open) return null
 
-  // Handle Submit
+  //handle form submit
   function handleSubmit(e) {
     e.preventDefault()
     const payload = { title, description, status }
