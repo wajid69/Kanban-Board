@@ -26,7 +26,8 @@ export default React.memo(function TaskCard({ task, onEdit, isOverlay = false })
   }
   const style = {
     transform: transform ? CSS.Transform.toString(transform) : undefined,
-    transition
+    transition,
+    touchAction: 'none'
   }
 
   
